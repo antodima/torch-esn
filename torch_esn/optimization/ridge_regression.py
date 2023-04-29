@@ -15,6 +15,8 @@ def fit_and_validate_readout(
     score_fn: Callable[[Tensor, Tensor], float],
     mode: Literal["min", "max"],
     preprocess_fn: Optional[Callable] = None,
+    perc_rec: Optional[float] = None,
+    alpha: Optional[float] = 1.0,
     device: Optional[str] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Applies the ridge regression on the training data with all the given l2 values
@@ -33,6 +35,11 @@ def fit_and_validate_readout(
         preprocess_fn (Optional[Callable], optional): a transformation to be applied to
             X before the linear transformation. Useful whenever this function is called
             to learn a Readout of a ESN. Defaults to None.
+        perc_rec (Optional[float], optional): percentage of the recurrent neurons to be used.
+            If None, all the recurrent neurons are used. Defaults to None.
+        alpha (Optional[float], 1.0): use alpha recurrent neurons and (1-alpha)
+            random neurons over the fraction of all recurrent neurons given by `perc_rec`.
+            Defaults to 1.0.
         device (Optional[str], optional): the device on which the function is executed.
             If None, the function is executed on a CUDA device if available, on CPU
             otherwise. Defaults to None.
@@ -45,7 +52,7 @@ def fit_and_validate_readout(
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Training
-    all_W = fit_readout(train_loader, preprocess_fn, l2_values, device)
+    all_W = fit_readout(train_loader, preprocess_fn, perc_rec, alpha, l2_values, device)
     if not isinstance(all_W, List):
         all_W = [all_W]
 
@@ -63,6 +70,8 @@ def fit_and_validate_readout(
 def fit_readout(
     train_loader: torch.utils.data.DataLoader,
     preprocess_fn: Optional[Callable] = None,
+    perc_rec: Optional[float] = None,
+    alpha: Optional[float] = 1.0,
     l2: Optional[Union[float, List[float]]] = None,
     device: Optional[str] = "cpu",
 ) -> Tuple[Tensor, Tensor]:
@@ -75,6 +84,11 @@ def fit_readout(
         preprocess_fn (Optional[Callable], optional): a transformation to be applied to
             X before the linear transformation. Useful whenever this function is called
             to learn a Readout of a ESN. Defaults to None.
+        perc_rec (Optional[float], optional): percentage of the recurrent neurons to be used.
+            If None, all the recurrent neurons are used. Defaults to None.
+        alpha (Optional[float], 1.0): use alpha recurrent neurons and (1-alpha)
+            random neurons over the fraction of all recurrent neurons given by `perc_rec`.
+            Defaults to 1.0.
         device (Optional[str], optional): the device on which the function is executed.
             If None, the function is executed on a CUDA device if available, on CPU
             otherwise. Defaults to None.
@@ -83,7 +97,7 @@ def fit_readout(
         Tuple[Tensor, float, float]: a Tuple containing the best linear matrix, the
             corrisponding l2 value and the metric value.
     """
-    A, B = compute_ridge_matrices(train_loader, preprocess_fn, device=device)
+    A, B = compute_ridge_matrices(train_loader, preprocess_fn, perc_rec, alpha, device)
     if isinstance(l2, List):
         return [solve_ab_decomposition(A, B, curr_l2, device) for curr_l2 in l2]
     else:
