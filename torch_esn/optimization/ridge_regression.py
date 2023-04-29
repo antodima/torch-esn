@@ -58,6 +58,11 @@ def fit_and_validate_readout(
 
     # Validation
     eval_scores = validate_readout(all_W, eval_loader, score_fn, preprocess_fn, device)
+    if not isinstance(eval_scores, List):
+        eval_scores = [eval_scores]
+    
+    if not isinstance(l2_values, List):
+        l2_values = [l2_values]
 
     # Selection
     select_fn = max if mode == "max" else min
@@ -207,6 +212,7 @@ def compute_ridge_matrices(
             x = x.reshape(-1, size_x[-1])
             y = y.reshape(-1, size_y[-1])
 
+        x = x.to(device)
         y = y.to(device).float()
         batch_A, batch_B = (y.T @ x).cpu(), (x.T @ x).cpu()
 
