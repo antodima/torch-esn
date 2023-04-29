@@ -41,7 +41,7 @@ class WESADDataset(torch.utils.data.Dataset):
         "eval": ["3", "9", "14"],
         "test": ["4", "6", "10"],
     }
-    CONTEXTS = [-1, 0, 1, 2, 3, 4]
+    CONTEXTS = [0, 1, 2, 3, 4]
 
     def __init__(
         self, user: str, context: int, seq_length: Optional[int] = 700
@@ -49,7 +49,7 @@ class WESADDataset(torch.utils.data.Dataset):
         super().__init__()
         if user not in WESADDataset.USERS["all"]:
             raise ValueError(f"User {user} not found in WESAD dataset")
-        if context not in WESADDataset.CONTEXTS:
+        if context not in WESADDataset.CONTEXTS and context is not None:
             raise ValueError(f"Context {context} not found in WESAD dataset")
         self.user = user
         self.context = context
@@ -60,7 +60,7 @@ class WESADDataset(torch.utils.data.Dataset):
             self.preprocess()
         self.data = pickle.load(open(self.path, "rb"))
         
-        if self.context >= 0:
+        if self.context is not None:
             self._get_context(context)
 
         self.features, self.targets = self.data["X"], self.data["Y"]
