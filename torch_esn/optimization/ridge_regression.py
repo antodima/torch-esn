@@ -83,7 +83,7 @@ def fit_readout(
         Tuple[Tensor, float, float]: a Tuple containing the best linear matrix, the
             corrisponding l2 value and the metric value.
     """
-    A, B = compute_ridge_matrices(train_loader, preprocess_fn, device)
+    A, B = compute_ridge_matrices(train_loader, preprocess_fn, device=device)
     if isinstance(l2, List):
         return [solve_ab_decomposition(A, B, curr_l2, device) for curr_l2 in l2]
     else:

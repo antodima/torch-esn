@@ -2,7 +2,7 @@ from torch.utils.data import ConcatDataset
 
 from typing import List, Union
 
-DATA_PATH = "/raid/decaro/datasets"
+DATA_PATH = "/home/anto/Scaricati/datasets"
 
 
 def get_dataset(name: str, users: Union[str, List[str]], continual: bool = False):

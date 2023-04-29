@@ -41,7 +41,7 @@ class WESADDataset(torch.utils.data.Dataset):
         "eval": ["3", "9", "14"],
         "test": ["4", "6", "10"],
     }
-    CONTEXTS = [0, 1, 2, 3, 4]
+    CONTEXTS = [-1, 0, 1, 2, 3, 4]
 
     def __init__(
         self, user: str, context: int, seq_length: Optional[int] = 700
@@ -59,7 +59,9 @@ class WESADDataset(torch.utils.data.Dataset):
         if not os.path.exists(self.path):
             self.preprocess()
         self.data = pickle.load(open(self.path, "rb"))
-        self._get_context(context)
+        
+        if self.context >= 0:
+            self._get_context(context)
 
         self.features, self.targets = self.data["X"], self.data["Y"]
         if seq_length is not None:
